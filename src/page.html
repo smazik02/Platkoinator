@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PLATKOINATOR</title>
+		<style>
+			body {
+				font-family: Verdana, Geneva, Tahoma, sans-serif;
+				background-color: #ffffff;
+			}
+			div {
+				background-color: #ffffff;
+			}
+			div#header {
+				margin-left: 1vw;
+				font-size: 4vw;
+				text-align: center;
+			}
+			div.buttons {
+				padding-left: 10px;
+				padding-right: 10px;
+				text-align: center;
+			}
+			.btn {
+				font-size: min(5.5vw, 50px);
+				color: antiquewhite;
+				border: none;
+				border-radius: 10px;
+				padding: 20px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				margin: 0.5vh 0.3vw;
+				height: min(12vh, 100px);
+				width: 30vw;
+				background-color: black;
+			}
+			#btn1 {
+				font-size: 5.5vw;
+				width: 50wv;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="header"><h1>PLATKOINATOR 3000</h1></div>
+		<div class="buttons">
+			<button class="btn" onclick="fetch('http:\/\/192.168.4.1/P1')">
+				Platki 1
+			</button>
+			<button class="btn" onclick="fetch('http:\/\/192.168.4.1/P2')">
+				Platki 2
+			</button>
+			<button class="btn" onclick="fetch('http:\/\/192.168.4.1/P3')">
+				Platki 3
+			</button>
+		</div>
+		<div class="buttons">
+			<button class="btn" onclick="fetch('http:\/\/192.168.4.1/M1')">
+				Mleko 1
+			</button>
+			<button class="btn" onclick="fetch('http:\/\/192.168.4.1/M2')">
+				Mleko 2
+			</button>
+			<button class="btn" onclick="fetch('http:\/\/192.168.4.1/M3')">
+				Mleko 3
+			</button>
+		</div>
+		<br />
+		<div id="done" class="buttons">
+			<button
+				class="btn"
+				id="btn1"
+				onclick="fetch('http:\/\/192.168.4.1/OK')"
+			>
+				PROCEED
+			</button>
+		</div>
+	</body>
+</html>
