@@ -230,6 +230,7 @@ void main_function(void) {
     delay(1000);
 
     // TODO - wydajemy miskę
+    while (analogRead(SENSOR_START) < SENSOR_SENSITIVITY);
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nalewanie mleka", tft.width() / 2, tft.height() / 2);
