@@ -246,7 +246,7 @@ void main_function(void) {
     tft.drawString("Nasypywanie platkow", tft.width() / 2, tft.height() / 2);
 
     analogWrite(BELT, BELT_SPEED);
-    while (analogRead(cereal_sensors[cereal_chosen]) < SENSOR_SENSITIVITY);
+    while (analogRead(cereal_sensors[cereal]) < SENSOR_SENSITIVITY);
 
     analogWrite(BELT, 0.0f);
     delay(500);
@@ -304,28 +304,6 @@ void handleWiFi(void) {
                         client.println("HTTP/1.1 200 OK");
                         client.println("Content-type:text/html");
                         client.println();
-
-                        // client.print("<!DOCTYPE html><html>");
-                        // client.print("<head><title>PLATKOINATOR</title>");
-                        // client.print("</head>");
-                        // client.print("<body>");
-                        // client.print("<div id=\"header\"><h1>PLATKOINATOR 3000</h1></div>");
-                        // client.print("<div id=\"platki\">");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/C1')\">Platki 1</button>");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/C2')\">Platki 2</button>");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/C3')\">Platki 3</button>");
-                        // client.print("</div>");
-                        // client.print("<div id=\"mleko\">");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/M1')\">Mleko 1</button>");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/M2')\">Mleko 2</button>");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/M3')\">Mleko 3</button>");
-                        // client.print("</div>");
-                        // client.print("<br />");
-                        // client.print("<div id=\"done\">");
-                        // client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/OK')\">PROCEED</button>");
-                        // client.print("</div>");
-                        // client.print("</body>");
-                        // client.print("</html>");
 
                         client.print("<!DOCTYPE html><html>\n");
                         client.print("<head><title>PLATKOINATOR</title><style>\n");
