@@ -26,6 +26,14 @@
 #define PUMP_SPEED 100
 #define SENSOR_SENSITIVITY 100
 
+// LEDs
+#define LED_COUNT 20
+#define LED_START 3
+#define LED_MILK 5
+#define LED_CEREAL_1 6
+#define LED_CEREAL_2 8
+#define LED_CEREAL_3 10
+
 // Screen, better to not touch
 #define BUTTON_W 135
 #define BUTTON_H 110
