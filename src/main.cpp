@@ -10,7 +10,11 @@
 #include "constants.h"
 #include "logo.h"
 
+// Comment out WIFI if you don't want the functionality.
+// Works just fine without it and reduces compilation/flashing time drastically
 // #define WIFI
+
+// Comment out if you just want to test the screen (and/or WiFi), disables processing inputs and outputs
 #define TEST
 
 TFT_eSPI tft = TFT_eSPI();
@@ -215,6 +219,7 @@ void loop() {
 }
 
 #ifndef TEST
+// Main functionality of the program
 void main_function(void) {
     Serial.println("Platki czas zaczac");
     Serial.printf("Platki %d, mleko %d\n", cereal, milk);
@@ -230,13 +235,13 @@ void main_function(void) {
     delay(1000);
 
     // TODO - wydajemy miskę
-    while (analogRead(SENSOR_START) < SENSOR_SENSITIVITY);
+    while (analogRead(SENSOR_START) > SENSOR_SENSITIVITY);
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nalewanie mleka", tft.width() / 2, tft.height() / 2);
 
     analogWrite(BELT, BELT_SPEED);
-    while (analogRead(SENSOR_MILK) < SENSOR_SENSITIVITY);
+    while (analogRead(SENSOR_MILK) > SENSOR_SENSITIVITY);
 
     analogWrite(BELT, 0.0f);
     delay(500);
@@ -247,7 +252,7 @@ void main_function(void) {
     tft.drawString("Nasypywanie platkow", tft.width() / 2, tft.height() / 2);
 
     analogWrite(BELT, BELT_SPEED);
-    while (analogRead(cereal_sensors[cereal]) < SENSOR_SENSITIVITY);
+    while (analogRead(cereal_sensors[cereal]) > SENSOR_SENSITIVITY);
 
     analogWrite(BELT, 0.0f);
     delay(500);
@@ -258,7 +263,7 @@ void main_function(void) {
     tft.drawString("Juz prawie gotowe", tft.width() / 2, tft.height() / 2);
 
     analogWrite(BELT, BELT_SPEED);
-    while (analogRead(SENSOR_END) < SENSOR_SENSITIVITY);
+    while (analogRead(SENSOR_END) > SENSOR_SENSITIVITY);
 
     analogWrite(BELT, 0.0f);
     tft.setTextColor(TFT_BLACK);
@@ -266,7 +271,7 @@ void main_function(void) {
     tft.drawString("Odbierz platki", tft.width() / 2, tft.height() / 2 - 18);
     tft.drawString("Smacznego :)", tft.width() / 2, tft.height() / 2 + 18);
 
-    while (analogRead(SENSOR_END) >= SENSOR_SENSITIVITY);
+    while (analogRead(SENSOR_END) <= SENSOR_SENSITIVITY);
     delay(5000);
 
     initScreen();
