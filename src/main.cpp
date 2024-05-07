@@ -13,19 +13,25 @@
 #include "Free_Fonts.h"
 #include "constants.h"
 #include "logo.h"
+#include "milk_40.h"
+#include "milk_56.h"
+#include "milk_72.h"
 
 // Comment out WIFI if you don't want the functionality
 // Works just fine without it and reduces compilation/flashing time drastically
-#define WIFI
+// #define WIFI
 
-// Comment out if you just want to test the screen (and/or WiFi), disables processing inputs and outputs
+// Comment out if you just want to test the screen (and/or WiFi), disables processing in and out pins
 #define TEST
 
 // Comment out to disable screen calibration
-// #define SCREEN
+#define SCREEN
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite logoSprite = TFT_eSprite(&tft);
+TFT_eSprite milkSprite_40 = TFT_eSprite(&tft);
+TFT_eSprite milkSprite_56 = TFT_eSprite(&tft);
+TFT_eSprite milkSprite_72 = TFT_eSprite(&tft);
 
 #ifdef WIFI
 WiFiServer server(80);
@@ -79,6 +85,7 @@ void next_btn_pressAction(void);
 void switchScene(uint8_t scene);
 void initButtons(void);
 void initScreen(void);
+void pushMilkSprites(void);
 void touch_calibrate(void);
 
 void setup() {
@@ -129,6 +136,15 @@ void setup() {
 
     logoSprite.createSprite(LOGO_W, LOGO_H);
     logoSprite.setSwapBytes(true);
+
+    milkSprite_40.createSprite(40, 40);
+    milkSprite_40.setSwapBytes(true);
+
+    milkSprite_56.createSprite(56, 56);
+    milkSprite_56.setSwapBytes(true);
+
+    milkSprite_72.createSprite(72, 72);
+    milkSprite_72.setSwapBytes(true);
 
 #ifdef WIFI
     if (!WiFi.softAP(ssid, password)) {
@@ -460,6 +476,7 @@ void handleWiFi(void) {
                         if (btn6.getState())
                             btn6.drawSmoothButton(false, 3, TFT_WHITE);
                         btn4.drawSmoothButton(true, 3, TFT_WHITE);
+                        pushMilkSprites();
                     }
                     milk_chosen = true;
                     milk = 0;
@@ -472,6 +489,7 @@ void handleWiFi(void) {
                         if (btn6.getState())
                             btn6.drawSmoothButton(false, 3, TFT_WHITE);
                         btn5.drawSmoothButton(true, 3, TFT_WHITE);
+                        pushMilkSprites();
                     }
                     milk_chosen = true;
                     milk = 1;
@@ -484,6 +502,7 @@ void handleWiFi(void) {
                         if (btn5.getState())
                             btn5.drawSmoothButton(false, 3, TFT_WHITE);
                         btn6.drawSmoothButton(true, 3, TFT_WHITE);
+                        pushMilkSprites();
                     }
                     milk_chosen = true;
                     milk = 2;
@@ -610,6 +629,7 @@ void btn4_pressAction() {
         if (btn6.getState())
             btn6.drawSmoothButton(false, 3, TFT_WHITE);
         btn4.drawSmoothButton(!btn4.getState(), 3, TFT_WHITE);
+        pushMilkSprites();
         milk_chosen = btn4.getState() ? true : false;
         milk = btn4.getState() ? 0 : -1;
         if (btn4.getState())
@@ -626,6 +646,7 @@ void btn5_pressAction() {
         if (btn6.getState())
             btn6.drawSmoothButton(false, 3, TFT_WHITE);
         btn5.drawSmoothButton(!btn5.getState(), 3, TFT_WHITE);
+        pushMilkSprites();
         milk_chosen = btn5.getState() ? true : false;
         milk = btn5.getState() ? 1 : -1;
         if (btn5.getState())
@@ -642,6 +663,7 @@ void btn6_pressAction() {
         if (btn5.getState())
             btn5.drawSmoothButton(false, 3, TFT_WHITE);
         btn6.drawSmoothButton(!btn6.getState(), 3, TFT_WHITE);
+        pushMilkSprites();
         milk_chosen = btn6.getState() ? true : false;
         milk = btn6.getState() ? 2 : -1;
         if (btn6.getState())
@@ -698,24 +720,28 @@ void next_btn_pressAction() {
 void switchScene(uint8_t scene) {
     tft.fillScreen(TFT_WHITE);
     switch (scene) {
-        case 1:
+        case 1: {
             btn1.drawSmoothButton(cereal == 0 ? true : false, 3, TFT_WHITE);
             btn2.drawSmoothButton(cereal == 1 ? true : false, 3, TFT_WHITE);
             btn3.drawSmoothButton(cereal == 2 ? true : false, 3, TFT_WHITE);
             btn_next.drawSmoothButton(false, 3, TFT_WHITE);
             break;
+        }
 
-        case 2:
+        case 2: {
             btn4.drawSmoothButton(milk == 0 ? true : false, 3, TFT_WHITE);
             btn5.drawSmoothButton(milk == 1 ? true : false, 3, TFT_WHITE);
             btn6.drawSmoothButton(milk == 2 ? true : false, 3, TFT_WHITE);
             btn_back.drawSmoothButton(false, 3, TFT_WHITE);
             btn_next.drawSmoothButton(false, 3, TFT_WHITE);
+            pushMilkSprites();
             break;
+        }
 
-        case 3:
+        case 3: {
             btn_ok.drawSmoothButton(false, 3, TFT_WHITE);
             break;
+        }
     }
     Serial.printf("Switching to scene %d\n\n", scene);
 }
@@ -725,19 +751,19 @@ void initButtons() {
     uint16_t y = tft.height() / 2 - BUTTON_H;
     btn1.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "Platki 1", 1);
     btn1.setPressAction(btn1_pressAction);
-    btn4.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "Mleko 1", 1);
+    btn4.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "", 1);
     btn4.setPressAction(btn4_pressAction);
 
     x += BUTTON_W + 10;
     btn2.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "Platki 2", 1);
     btn2.setPressAction(btn2_pressAction);
-    btn5.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "Mleko 2", 1);
+    btn5.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "", 1);
     btn5.setPressAction(btn5_pressAction);
 
     x += BUTTON_W + 10;
     btn3.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "Platki 3", 1);
     btn3.setPressAction(btn3_pressAction);
-    btn6.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "Mleko 3", 1);
+    btn6.initButtonUL(x, y, BUTTON_W, BUTTON_H, TFT_BLACK, TFT_BLUE, TFT_WHITE, "", 1);
     btn6.setPressAction(btn6_pressAction);
 
     x = (tft.width() - NAV_BUTTON_W) / 2 - (NAV_BUTTON_W / 2 + 10);
@@ -789,6 +815,23 @@ void initScreen() {
     initButtons();
     switchScene(scene);
     delay(200);
+}
+
+void pushMilkSprites(void) {
+    uint16_t x = BUTTON_W / 2 + 10;
+    uint16_t y = tft.height() / 2 - BUTTON_H + 30;
+    milkSprite_40.pushImage(0, 0, 40, 40, milk_40);
+    milkSprite_40.pushSprite(x, y, TFT_BLACK);
+
+    x += BUTTON_W + 10 - 8;
+    y -= 8;
+    milkSprite_56.pushImage(0, 0, 56, 56, milk_56);
+    milkSprite_56.pushSprite(x, y, TFT_BLACK);
+
+    x += BUTTON_W + 10 - 8;
+    y -= 8;
+    milkSprite_72.pushImage(0, 0, 72, 72, milk_72);
+    milkSprite_72.pushSprite(x, y, TFT_BLACK);
 }
 
 void touch_calibrate() {
