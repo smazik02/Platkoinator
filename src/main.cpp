@@ -21,6 +21,9 @@
 // Comment out if you just want to test the screen (and/or WiFi), disables processing inputs and outputs
 #define TEST
 
+// Comment out to disable screen calibration
+// #define SCREEN
+
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite logoSprite = TFT_eSprite(&tft);
 
@@ -141,7 +144,9 @@ void setup() {
     beginOTA();
 #endif
 
+#ifdef SCREEN
     touch_calibrate();
+#endif
     initScreen();
 }
 
