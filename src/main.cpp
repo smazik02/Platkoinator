@@ -1,11 +1,14 @@
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <ESP32Servo.h>
+#include <ESPmDNS.h>
 #include <FastLED.h>
 #include <TFT_eSPI.h>
 #include <TFT_eWidget.h>
 #include <WiFi.h>
 #include <WiFiAP.h>
 #include <WiFiClient.h>
+#include <WiFiUdp.h>
 
 #include "Free_Fonts.h"
 #include "constants.h"
@@ -13,10 +16,10 @@
 
 // Comment out WIFI if you don't want the functionality
 // Works just fine without it and reduces compilation/flashing time drastically
-// #define WIFI
+#define WIFI
 
 // Comment out if you just want to test the screen (and/or WiFi), disables processing inputs and outputs
-// #define TEST
+#define TEST
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite logoSprite = TFT_eSprite(&tft);
@@ -59,6 +62,7 @@ void deposit_cereal(void);
 #endif
 #ifdef WIFI
 void handleWiFi(void);
+void beginOTA(void);
 #endif
 void btn1_pressAction(void);
 void btn2_pressAction(void);
@@ -105,8 +109,6 @@ void setup() {
     analogWrite(SERVO_CEREAL_1, 90.0f);
     digitalWrite(SERVO_CEREAL_2, 90.0f);
     digitalWrite(SERVO_CEREAL_3, 90.0f);
-    digitalWrite(SOLENOID_1, 0);
-    digitalWrite(SOLENOID_2, 0);
 
     servo[0].attach(SERVO_CEREAL_1);
     servo[1].attach(SERVO_CEREAL_2);
@@ -136,6 +138,7 @@ void setup() {
     server.begin();
 
     Serial.println("Server started");
+    beginOTA();
 #endif
 
     touch_calibrate();
@@ -148,11 +151,14 @@ void loop() {
 
 #ifdef WIFI
     handleWiFi();
+    ArduinoOTA.handle();
 #endif
 
+#ifndef TEST
     for (auto led : leds) led = CRGB::Blue;
     FastLED.show();
     pulse_leds();
+#endif
 
     if (millis() - scanTime >= 50) {
         bool pressed = tft.getTouch(&t_x, &t_y);
@@ -384,14 +390,14 @@ void handleWiFi(void) {
                         client.print("#btn1 {font-size: 5.5vw;width: 50wv;}</style></head>\n");
                         client.print("<body><div id=\"header\"><h1>PLATKOINATOR 3000</h1></div>\n");
                         client.print("<div class=\"buttons\">\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/P1')\">Platki 1</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/P2')\">Platki 2</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/P3')\">Platki 3</button></div>\n");
+                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/C1')\">Platki 1</button>\n");
+                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/C2')\">Platki 2</button>\n");
+                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/C3')\">Platki 3</button></div>\n");
                         client.print("<div class=\"buttons\">\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/M1')\">Mleko 1</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/M2')\">Mleko 2</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http:\\/\\/192.168.4.1/M3')\">Mleko 3</button></div><br />\n");
-                        client.print("<div id=\"done\" class=\"buttons\"><buttonclass=\"btn\"id=\"btn1\"onclick=\"fetch('http:\\/\\/192.168.4.1/OK')\">PROCEED</button></div>\n");
+                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/M1')\">Mleko 1</button>\n");
+                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/M2')\">Mleko 2</button>\n");
+                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/M3')\">Mleko 3</button></div><br />\n");
+                        client.print("<div id=\"done\" class=\"buttons\"><button class=\"btn\" id=\"btn1\" onclick=\"fetch('http://192.168.4.1/OK')\">PROCEED</button></div>\n");
                         client.print("</body></html>");
 
                         // client.print("");
@@ -508,6 +514,39 @@ void handleWiFi(void) {
 
         client.stop();
     }
+}
+
+void beginOTA(void) {
+    ArduinoOTA.setHostname("Platkoinator");
+
+    ArduinoOTA
+        .onStart([]() {
+            String type;
+            if (ArduinoOTA.getCommand() == U_FLASH)
+                type = "sketch";
+            else  // U_SPIFFS
+                type = "filesystem";
+        })
+        .onEnd([]() {
+            Serial.println("\nEnd");
+        })
+        .onProgress([](unsigned int progress, unsigned int total) {
+            Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        })
+        .onError([](ota_error_t error) {
+            Serial.printf("Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR)
+                Serial.println("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR)
+                Serial.println("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR)
+                Serial.println("Connect Failed");
+            else if (error == OTA_RECEIVE_ERROR)
+                Serial.println("Receive Failed");
+            else if (error == OTA_END_ERROR)
+                Serial.println("End Failed");
+        });
+    ArduinoOTA.begin();
 }
 #endif
 
