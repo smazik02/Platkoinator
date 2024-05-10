@@ -3,7 +3,7 @@
 
 // Change pins
 #define BELT 22
-#define BELT_FORWARD 19
+#define BELT_FORWARD 1
 #define BELT_BACK 29
 #define LED 14
 #define PUMP 17

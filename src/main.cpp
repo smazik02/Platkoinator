@@ -19,13 +19,14 @@
 
 // Comment out WIFI if you don't want the functionality
 // Works just fine without it and reduces compilation/flashing time drastically
-// #define WIFI
+// Note - disables OTA flashing over WiFi, so be careful
+#define WIFI
 
 // Comment out if you just want to test the screen (and/or WiFi), disables processing in and out pins
 #define TEST
 
 // Comment out to disable screen calibration
-#define SCREEN
+// #define SCREEN
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite logoSprite = TFT_eSprite(&tft);
