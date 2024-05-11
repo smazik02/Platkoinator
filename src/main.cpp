@@ -20,13 +20,16 @@
 // Comment out WIFI if you don't want the functionality
 // Works just fine without it and reduces compilation/flashing time drastically
 // Note - disables OTA flashing over WiFi, so be careful
-#define WIFI
+// #define WIFI
 
 // Uncomment if you just want to test the screen (and/or WiFi), disables processing in and out pins
 // #define TEST
 
 // Comment out to disable screen calibration
-// #define SCREEN
+#define SCREEN
+
+// Comment out to disable LEDs
+// #define LED
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite logoSprite = TFT_eSprite(&tft);
@@ -63,10 +66,14 @@ int8_t cereal, milk, scene;
 Servo servo[3];
 uint8_t cereal_sensors[] = {SENSOR_CEREAL_1, SENSOR_CEREAL_2, SENSOR_CEREAL_3};
 uint8_t cereal_leds[] = {LED_CEREAL_1, LED_CEREAL_2, LED_CEREAL_3};
+#ifdef LED
 CRGB leds[LED_COUNT];
+#endif
 
 void main_function(void);
+#ifdef LED
 void pulse_leds(uint8_t);
+#endif
 void pump_milk(void);
 void deposit_cereal(void);
 #endif
@@ -126,8 +133,9 @@ void setup() {
     servo[0].write(90.0f);
     servo[1].write(90.0f);
     servo[2].write(90.0f);
-
+#ifdef LED
     FastLED.addLeds<WS2812B, LED, GBR>(leds, LED_COUNT);
+#endif
 #endif
 
     tft.begin();
@@ -164,8 +172,10 @@ void setup() {
     touch_calibrate();
 #endif
     initScreen();
+#ifdef LED
     for (auto led : leds) led = CRGB::Blue;
     FastLED.show();
+#endif
 }
 
 void loop() {
@@ -177,7 +187,7 @@ void loop() {
     ArduinoOTA.handle();
 #endif
 
-#ifndef TEST
+#ifdef LED
     pulse_leds(LED_COUNT);
 #endif
 
@@ -256,8 +266,10 @@ void loop() {
 #ifndef TEST
 // Main functionality of the program
 void main_function(void) {
+#ifdef LED
     for (auto led : leds) led = CRGB::Black;
     FastLED.show();
+#endif
     Serial.println("Platki czas zaczac");
     Serial.printf("Platki %d, mleko %d\n", cereal, milk);
 
@@ -270,16 +282,21 @@ void main_function(void) {
     tft.drawString("Platki sa przygotowywane", tft.width() / 2, tft.height() / 2 - 18);
     tft.drawString("Wydawanie miski", tft.width() / 2, tft.height() / 2 + 18);
     delay(1000);
-
+#ifdef LED
     for (uint8_t i = 0; i < LED_START; i++)
         leds[i] = CRGB::Green;
+#endif
 
     while (analogRead(SENSOR_START) > SENSOR_SENSITIVITY)
+#ifndef LED
+        ;
+#else
         pulse_leds(LED_START);
 
     for (uint8_t i = 0; i < LED_MILK; i++)
         leds[i] = CRGB::Blue;
     FastLED.show();
+#endif
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nalewanie mleka", tft.width() / 2, tft.height() / 2);
@@ -292,6 +309,7 @@ void main_function(void) {
     pump_milk();
     delay(500);
 
+#ifdef LED
     uint8_t range;
     switch (cereal) {
         case 0:
@@ -308,6 +326,7 @@ void main_function(void) {
     for (uint8_t i = 0; i < range; i++)
         leds[i] = CRGB::Blue;
     FastLED.show();
+#endif
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nasypywanie platkow", tft.width() / 2, tft.height() / 2);
@@ -319,9 +338,10 @@ void main_function(void) {
     delay(500);
     deposit_cereal();
     delay(500);
-
+#ifdef LED
     for (auto led : leds) led = CRGB::Blue;
     FastLED.show();
+#endif
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Juz prawie gotowe", tft.width() / 2, tft.height() / 2);
@@ -329,7 +349,9 @@ void main_function(void) {
     ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(SENSOR_END) > SENSOR_SENSITIVITY);
 
+#ifdef LED
     for (auto led : leds) led = CRGB::Green;
+#endif
 
     ledcWrite(BELT, 0);
     tft.setTextColor(TFT_BLACK);
@@ -343,12 +365,17 @@ void main_function(void) {
 
     uint32_t end = millis();
     while (millis() - end < 5000) {
+#ifdef LED
         pulse_leds(LED_COUNT);
+#else
+        ;
+#endif
     }
 
     initScreen();
 }
 
+#ifdef LED
 void pulse_leds(uint8_t led_count) {
     static uint32_t pulseTime = millis();
     static uint8_t color = 255;
@@ -363,6 +390,7 @@ void pulse_leds(uint8_t led_count) {
             fadeAmount = -fadeAmount;
     }
 }
+#endif
 
 void pump_milk(void) {
     digitalWrite(PUMP_BACK, 0);
@@ -677,7 +705,7 @@ void ok_btn_pressAction() {
     if (btn_ok.justPressed()) {
         btn_ok.drawSmoothButton(!btn_ok.getState(), 3, TFT_WHITE);
         if (!cereal_chosen || !milk_chosen) {
-#ifndef TEST
+#ifdef LED
             for (auto led : leds) led = CRGB::Red;
 #endif
             tft.drawRoundRect(99, 99, tft.width() - 198, tft.height() - 198, 5, TFT_BLACK);
@@ -695,7 +723,7 @@ void ok_btn_pressAction() {
             delay(2000);
 
             switchScene(scene);
-#ifndef TEST
+#ifdef LED
             for (auto led : leds) led = CRGB::Blue;
 #endif
             return;
