@@ -66,7 +66,7 @@ uint8_t cereal_leds[] = {LED_CEREAL_1, LED_CEREAL_2, LED_CEREAL_3};
 CRGB leds[LED_COUNT];
 
 void main_function(void);
-void pulse_leds(uint8_t led_count = LED_COUNT);
+void pulse_leds(uint8_t);
 void pump_milk(void);
 void deposit_cereal(void);
 #endif
@@ -178,7 +178,7 @@ void loop() {
 #endif
 
 #ifndef TEST
-    pulse_leds();
+    pulse_leds(LED_COUNT);
 #endif
 
     if (millis() - scanTime >= 50) {
@@ -338,18 +338,18 @@ void main_function(void) {
     tft.drawString("Smacznego :)", tft.width() / 2, tft.height() / 2 + 18);
 
     while (analogRead(SENSOR_END) <= SENSOR_SENSITIVITY) {
-        pulse_leds();
+        pulse_leds(LED_COUNT);
     }
 
     uint32_t end = millis();
     while (millis() - end < 5000) {
-        pulse_leds();
+        pulse_leds(LED_COUNT);
     }
 
     initScreen();
 }
 
-void pulse_leds(uint8_t led_count = LED_COUNT) {
+void pulse_leds(uint8_t led_count) {
     static uint32_t pulseTime = millis();
     static uint8_t color = 255;
     static uint8_t fadeAmount = 5;
