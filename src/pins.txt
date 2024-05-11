@@ -27,21 +27,21 @@ ADC - 12 bit (0-4095)
 Wszystkie piny które dają output mogą być używane do PWM
 
 WOLNE PINY
-GPIO 1 -> opcjonalny output, TX0, outputuje debug info podczas bootowania, potem OK
-GPIO 5 -> output high podczas bootowania
+#GPIO 1 -> opcjonalny output, TX0, outputuje debug info podczas bootowania, potem OK
+#GPIO 5 -> output high podczas bootowania
 GPIO 12 -> tylko output
 GPIO 13 -> ADC
-GPIO 14 -> ADC, output high podczas bootowania
+#GPIO 14 -> ADC, output high podczas bootowania
 GPIO 16
 GPIO 17
 GPIO 22
 GPIO 25 -> ADC
-GPIO 26 -> ADC
-GPIO 27 -> ADC
-GPIO 32 -> ADC
-GPIO 33 -> ADC
-GPIO 34 -> ADC, tylko input
-GPIO 35 -> ADC, tylko input
+#GPIO 26 -> ADC
+#GPIO 27 -> ADC
+#GPIO 32 -> ADC
+#GPIO 33 -> ADC
+#GPIO 34 -> ADC, tylko input
+#GPIO 35 -> ADC, tylko input
 
 
 Potrzebne piny
