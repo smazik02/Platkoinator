@@ -359,18 +359,8 @@ void main_function(void) {
     tft.drawString("Odbierz platki", tft.width() / 2, tft.height() / 2 - 18);
     tft.drawString("Smacznego :)", tft.width() / 2, tft.height() / 2 + 18);
 
-    while (analogRead(SENSOR_END) <= SENSOR_SENSITIVITY) {
-        pulse_leds(LED_COUNT);
-    }
-
-    uint32_t end = millis();
-    while (millis() - end < 5000) {
-#ifdef LED
-        pulse_leds(LED_COUNT);
-#else
-        ;
-#endif
-    }
+    while (analogRead(SENSOR_END) <= SENSOR_SENSITIVITY);
+    delay(5000);
 
     initScreen();
 }
