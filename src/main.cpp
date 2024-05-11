@@ -1,14 +1,8 @@
 #include <Arduino.h>
-#include <ArduinoOTA.h>
 #include <ESP32Servo.h>
-#include <ESPmDNS.h>
 #include <FastLED.h>
 #include <TFT_eSPI.h>
 #include <TFT_eWidget.h>
-#include <WiFi.h>
-#include <WiFiAP.h>
-#include <WiFiClient.h>
-#include <WiFiUdp.h>
 
 #include "Free_Fonts.h"
 #include "constants.h"
@@ -16,11 +10,6 @@
 #include "milk_40.h"
 #include "milk_56.h"
 #include "milk_72.h"
-
-// Comment out WIFI if you don't want the functionality
-// Works just fine without it and reduces compilation/flashing time drastically
-// Note - disables OTA flashing over WiFi, so be careful
-#define WIFI
 
 // Comment out if you just want to test the screen (and/or WiFi), disables processing in and out pins
 #define TEST
@@ -33,12 +22,6 @@ TFT_eSprite logoSprite = TFT_eSprite(&tft);
 TFT_eSprite milkSprite_40 = TFT_eSprite(&tft);
 TFT_eSprite milkSprite_56 = TFT_eSprite(&tft);
 TFT_eSprite milkSprite_72 = TFT_eSprite(&tft);
-
-#ifdef WIFI
-WiFiServer server(80);
-const char *ssid = "Platkoinator";
-const char *password = "zaq1@WSX";
-#endif
 
 ButtonWidget btn_start = ButtonWidget(&tft);
 
@@ -69,10 +52,6 @@ void main_function(void);
 void pulse_leds(uint8_t led_count = LED_COUNT);
 void pump_milk(void);
 void deposit_cereal(void);
-#endif
-#ifdef WIFI
-void handleWiFi(void);
-void beginOTA(void);
 #endif
 void btn1_pressAction(void);
 void btn2_pressAction(void);
@@ -147,20 +126,6 @@ void setup() {
     milkSprite_72.createSprite(72, 72);
     milkSprite_72.setSwapBytes(true);
 
-#ifdef WIFI
-    if (!WiFi.softAP(ssid, password)) {
-        log_e("Soft AP creation failed.");
-        while (1);
-    }
-    IPAddress myIP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(myIP);
-    server.begin();
-
-    Serial.println("Server started");
-    beginOTA();
-#endif
-
 #ifdef SCREEN
     touch_calibrate();
 #endif
@@ -170,11 +135,6 @@ void setup() {
 void loop() {
     static uint32_t scanTime = millis();
     uint16_t t_x, t_y;
-
-#ifdef WIFI
-    handleWiFi();
-    ArduinoOTA.handle();
-#endif
 
 #ifndef TEST
     for (auto led : leds) led = CRGB::Blue;
@@ -385,193 +345,6 @@ void deposit_cereal(void) {
     servo[cereal].write(100.0f);
     delay(5000);
     servo[cereal].write(90.0f);
-}
-#endif
-
-#ifdef WIFI
-void handleWiFi(void) {
-    WiFiClient client = server.available();
-    if (client) {
-        String currentLine = "";
-        while (client.connected()) {
-            if (client.available()) {
-                char c = client.read();
-                if (c == '\n') {
-                    if (currentLine.length() == 0) {
-                        client.println("HTTP/1.1 200 OK");
-                        client.println("Content-type:text/html");
-                        client.println();
-
-                        client.print("<!DOCTYPE html><html>\n");
-                        client.print("<head><title>PLATKOINATOR</title><style>\n");
-                        client.print("body {font-family: Verdana, Geneva, Tahoma, sans-serif;background-color: #ffffff;}\n");
-                        client.print("div {background-color: #ffffff;}\n");
-                        client.print("div#header {margin-left: 1vw;font-size: 4vw;text-align: center;}\n");
-                        client.print("div.buttons {padding-left: 10px;padding-right: 10px;text-align: center;}\n");
-                        client.print(".btn {font-size: min(5.5vw, 50px);color: antiquewhite;border: none;border-radius: 10px;padding: 20px;text-align: center;text-decoration: none;display: inline-block;margin: 0.5vh 0.3vw;height: min(12vh, 100px);width: 30vw;background-color: black;}\n");
-                        client.print("#btn1 {font-size: 5.5vw;width: 50wv;}</style></head>\n");
-                        client.print("<body><div id=\"header\"><h1>PLATKOINATOR 3000</h1></div>\n");
-                        client.print("<div class=\"buttons\">\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/C1')\">Platki 1</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/C2')\">Platki 2</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/C3')\">Platki 3</button></div>\n");
-                        client.print("<div class=\"buttons\">\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/M1')\">Mleko 1</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/M2')\">Mleko 2</button>\n");
-                        client.print("<button class=\"btn\" onclick=\"fetch('http://192.168.4.1/M3')\">Mleko 3</button></div><br />\n");
-                        client.print("<div id=\"done\" class=\"buttons\"><button class=\"btn\" id=\"btn1\" onclick=\"fetch('http://192.168.4.1/OK')\">PROCEED</button></div>\n");
-                        client.print("</body></html>");
-
-                        // client.print("");
-
-                        client.println();
-                        break;
-                    } else {
-                        currentLine = "";
-                    }
-                } else if (c != '\r') {
-                    currentLine += c;
-                }
-
-                if (currentLine.endsWith("GET /C1")) {
-                    if (scene == 1) {
-                        if (btn2.getState())
-                            btn2.drawSmoothButton(false, 3, TFT_WHITE);
-                        if (btn3.getState())
-                            btn3.drawSmoothButton(false, 3, TFT_WHITE);
-                        btn1.drawSmoothButton(true, 3, TFT_WHITE);
-                    }
-                    cereal_chosen = true;
-                    cereal = 0;
-                    Serial.println("Platki 1 wybrane");
-                }
-                if (currentLine.endsWith("GET /C2")) {
-                    if (scene == 1) {
-                        if (btn1.getState())
-                            btn1.drawSmoothButton(false, 3, TFT_WHITE);
-                        if (btn3.getState())
-                            btn3.drawSmoothButton(false, 3, TFT_WHITE);
-                        btn2.drawSmoothButton(true, 3, TFT_WHITE);
-                    }
-                    cereal_chosen = true;
-                    cereal = 1;
-                    Serial.println("Platki 2 wybrane");
-                }
-                if (currentLine.endsWith("GET /C3")) {
-                    if (scene == 1) {
-                        if (btn1.getState())
-                            btn1.drawSmoothButton(false, 3, TFT_WHITE);
-                        if (btn2.getState())
-                            btn2.drawSmoothButton(false, 3, TFT_WHITE);
-                        btn3.drawSmoothButton(true, 3, TFT_WHITE);
-                    }
-                    cereal_chosen = true;
-                    cereal = 2;
-                    Serial.println("Platki 3 wybrane");
-                }
-
-                if (currentLine.endsWith("GET /M1")) {
-                    if (scene == 2) {
-                        if (btn5.getState())
-                            btn5.drawSmoothButton(false, 3, TFT_WHITE);
-                        if (btn6.getState())
-                            btn6.drawSmoothButton(false, 3, TFT_WHITE);
-                        btn4.drawSmoothButton(true, 3, TFT_WHITE);
-                        pushMilkSprites();
-                    }
-                    milk_chosen = true;
-                    milk = 0;
-                    Serial.println("Mleko 1 wybrane");
-                }
-                if (currentLine.endsWith("GET /M2")) {
-                    if (scene == 2) {
-                        if (btn4.getState())
-                            btn4.drawSmoothButton(false, 3, TFT_WHITE);
-                        if (btn6.getState())
-                            btn6.drawSmoothButton(false, 3, TFT_WHITE);
-                        btn5.drawSmoothButton(true, 3, TFT_WHITE);
-                        pushMilkSprites();
-                    }
-                    milk_chosen = true;
-                    milk = 1;
-                    Serial.println("Mleko 2 wybrane");
-                }
-                if (currentLine.endsWith("GET /M3")) {
-                    if (scene == 2) {
-                        if (btn4.getState())
-                            btn4.drawSmoothButton(false, 3, TFT_WHITE);
-                        if (btn5.getState())
-                            btn5.drawSmoothButton(false, 3, TFT_WHITE);
-                        btn6.drawSmoothButton(true, 3, TFT_WHITE);
-                        pushMilkSprites();
-                    }
-                    milk_chosen = true;
-                    milk = 2;
-                    Serial.println("Mleko 3 wybrane");
-                }
-
-                if (currentLine.endsWith("GET /OK")) {
-                    if (scene == 3)
-                        btn_ok.drawSmoothButton(!btn_ok.getState(), 3, TFT_WHITE);
-                    if (!cereal_chosen || !milk_chosen) {
-                        tft.drawRoundRect(99, 99, tft.width() - 198, tft.height() - 198, 5, TFT_BLACK);
-                        tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_RED);
-                        tft.setTextColor(TFT_WHITE);
-                        tft.setTextSize(1);
-                        tft.setTextDatum(MC_DATUM);
-                        if (!cereal_chosen) {
-                            tft.drawString("Wybierz platki", tft.width() / 2, tft.height() / 2);
-                            scene = 1;
-                        } else {
-                            tft.drawString("Wybierz mleko", tft.width() / 2, tft.height() / 2);
-                            scene = 2;
-                        }
-                        delay(2000);
-
-                        switchScene(scene);
-                        return;
-                    }
-                    Serial.println("Platkoinator naprzod");
-                    ready = true;
-                }
-            }
-        }
-
-        client.stop();
-    }
-}
-
-void beginOTA(void) {
-    ArduinoOTA.setHostname("Platkoinator");
-
-    ArduinoOTA
-        .onStart([]() {
-            String type;
-            if (ArduinoOTA.getCommand() == U_FLASH)
-                type = "sketch";
-            else  // U_SPIFFS
-                type = "filesystem";
-        })
-        .onEnd([]() {
-            Serial.println("\nEnd");
-        })
-        .onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-        })
-        .onError([](ota_error_t error) {
-            Serial.printf("Error[%u]: ", error);
-            if (error == OTA_AUTH_ERROR)
-                Serial.println("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR)
-                Serial.println("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR)
-                Serial.println("Connect Failed");
-            else if (error == OTA_RECEIVE_ERROR)
-                Serial.println("Receive Failed");
-            else if (error == OTA_END_ERROR)
-                Serial.println("End Failed");
-        });
-    ArduinoOTA.begin();
 }
 #endif
 

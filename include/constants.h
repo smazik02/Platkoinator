@@ -18,8 +18,6 @@
 #define SERVO_CEREAL_1 25
 #define SERVO_CEREAL_2 26
 #define SERVO_CEREAL_3 27
-#define SOLENOID_1 12
-#define SOLENOID_2 13
 
 // Adjust sensor sensitivity and engine speeds
 #define BELT_SPEED 5
