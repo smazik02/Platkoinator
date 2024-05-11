@@ -22,8 +22,8 @@
 // Note - disables OTA flashing over WiFi, so be careful
 #define WIFI
 
-// Comment out if you just want to test the screen (and/or WiFi), disables processing in and out pins
-#define TEST
+// Uncomment if you just want to test the screen (and/or WiFi), disables processing in and out pins
+// #define TEST
 
 // Comment out to disable screen calibration
 // #define SCREEN
@@ -88,15 +88,18 @@ void initButtons(void);
 void initScreen(void);
 void pushMilkSprites(void);
 void touch_calibrate(void);
+int toPWM(int val);
 
 void setup() {
     Serial.begin(115200);
 
 #ifndef TEST
-    pinMode(BELT, OUTPUT);
+    ledcSetup(BELT, FREQ, RES);
+    ledcSetup(PUMP, FREQ, RES);
+    ledcAttachPin(BELT_EN, BELT);
+    ledcAttachPin(PUMP_EN, PUMP);
     pinMode(BELT_FORWARD, OUTPUT);
     pinMode(BELT_BACK, OUTPUT);
-    pinMode(PUMP, OUTPUT);
     pinMode(PUMP_FORWARD, OUTPUT);
     pinMode(PUMP_BACK, OUTPUT);
     pinMode(SENSOR_START, INPUT_PULLUP);
@@ -108,18 +111,14 @@ void setup() {
     pinMode(SERVO_CEREAL_1, OUTPUT);
     pinMode(SERVO_CEREAL_2, OUTPUT);
     pinMode(SERVO_CEREAL_3, OUTPUT);
-    pinMode(SOLENOID_1, OUTPUT);
-    pinMode(SOLENOID_2, OUTPUT);
 
-    digitalWrite(BELT, 0);
+    ledcWrite(BELT, 0);
+    ledcWrite(PUMP, 0);
+
     digitalWrite(BELT_FORWARD, 1);
     digitalWrite(BELT_BACK, 0);
-    digitalWrite(PUMP, 0);
     digitalWrite(PUMP_FORWARD, 0);
     digitalWrite(PUMP_BACK, 0);
-    analogWrite(SERVO_CEREAL_1, 90.0f);
-    digitalWrite(SERVO_CEREAL_2, 90.0f);
-    digitalWrite(SERVO_CEREAL_3, 90.0f);
 
     servo[0].attach(SERVO_CEREAL_1);
     servo[1].attach(SERVO_CEREAL_2);
@@ -165,6 +164,8 @@ void setup() {
     touch_calibrate();
 #endif
     initScreen();
+    for (auto led : leds) led = CRGB::Blue;
+    FastLED.show();
 }
 
 void loop() {
@@ -177,8 +178,6 @@ void loop() {
 #endif
 
 #ifndef TEST
-    for (auto led : leds) led = CRGB::Blue;
-    FastLED.show();
     pulse_leds();
 #endif
 
@@ -285,10 +284,10 @@ void main_function(void) {
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nalewanie mleka", tft.width() / 2, tft.height() / 2);
 
-    analogWrite(BELT, BELT_SPEED);
+    ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(SENSOR_MILK) > SENSOR_SENSITIVITY);
 
-    analogWrite(BELT, 0.0f);
+    ledcWrite(BELT, 0);
     delay(500);
     pump_milk();
     delay(500);
@@ -313,10 +312,10 @@ void main_function(void) {
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nasypywanie platkow", tft.width() / 2, tft.height() / 2);
 
-    analogWrite(BELT, BELT_SPEED);
+    ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(cereal_sensors[cereal]) > SENSOR_SENSITIVITY);
 
-    analogWrite(BELT, 0.0f);
+    ledcWrite(BELT, 0);
     delay(500);
     deposit_cereal();
     delay(500);
@@ -327,12 +326,12 @@ void main_function(void) {
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Juz prawie gotowe", tft.width() / 2, tft.height() / 2);
 
-    analogWrite(BELT, BELT_SPEED);
+    ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(SENSOR_END) > SENSOR_SENSITIVITY);
 
     for (auto led : leds) led = CRGB::Green;
 
-    analogWrite(BELT, 0.0f);
+    ledcWrite(BELT, 0);
     tft.setTextColor(TFT_BLACK);
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_GREEN);
     tft.drawString("Odbierz platki", tft.width() / 2, tft.height() / 2 - 18);
@@ -366,19 +365,19 @@ void pulse_leds(uint8_t led_count = LED_COUNT) {
 }
 
 void pump_milk(void) {
-    digitalWrite(PUMP_FORWARD, 1);
     digitalWrite(PUMP_BACK, 0);
-    analogWrite(PUMP, PUMP_SPEED);
+    digitalWrite(PUMP_FORWARD, 1);
+    ledcWrite(PUMP, toPWM(PUMP_SPEED));
     delay(3000);  // TODO - specify delay based on chosen milk amount
 
-    analogWrite(PUMP, 0);
+    ledcWrite(PUMP, 0);
     delay(500);
 
     digitalWrite(PUMP_FORWARD, 0);
     digitalWrite(PUMP_BACK, 1);
-    analogWrite(PUMP, PUMP_SPEED);
+    ledcWrite(PUMP, toPWM(PUMP_SPEED));
     delay(1000);
-    analogWrite(PUMP, 0);
+    ledcWrite(PUMP, 0);
 }
 
 void deposit_cereal(void) {
@@ -854,4 +853,8 @@ void touch_calibrate() {
 
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
     tft.println("Calibration complete!");
+}
+
+int toPWM(int val) {
+    return map(val, 0, 100, 0, pow(2, RES));
 }
