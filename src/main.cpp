@@ -44,7 +44,6 @@ int8_t cereal, milk, scene;
 #ifndef TEST
 Servo servo[3];
 uint8_t cereal_sensors[] = {SENSOR_CEREAL_1, SENSOR_CEREAL_2, SENSOR_CEREAL_3};
-uint8_t cereal_leds[] = {LED_CEREAL_1, LED_CEREAL_2, LED_CEREAL_3};
 #endif
 
 #ifndef TEST
@@ -233,19 +232,6 @@ void main_function(void) {
     delay(500);
     pump_milk();
     delay(500);
-
-    uint8_t range;
-    switch (cereal) {
-        case 0:
-            range = LED_CEREAL_1;
-            break;
-        case 1:
-            range = LED_CEREAL_2;
-            break;
-        case 2:
-            range = LED_CEREAL_3;
-            break;
-    }
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nasypywanie platkow", tft.width() / 2, tft.height() / 2);
