@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <ESP32Servo.h>
-#include <FastLED.h>
 #include <TFT_eSPI.h>
 #include <TFT_eWidget.h>
 
@@ -11,8 +10,8 @@
 #include "milk_56.h"
 #include "milk_72.h"
 
-// Comment out if you just want to test the screen (and/or WiFi), disables processing in and out pins
-#define TEST
+// Uncomment if you just want to test the screen (and/or WiFi), disables processing in and out pins
+// #define TEST
 
 // Comment out to disable screen calibration
 // #define SCREEN
@@ -46,10 +45,10 @@ int8_t cereal, milk, scene;
 Servo servo[3];
 uint8_t cereal_sensors[] = {SENSOR_CEREAL_1, SENSOR_CEREAL_2, SENSOR_CEREAL_3};
 uint8_t cereal_leds[] = {LED_CEREAL_1, LED_CEREAL_2, LED_CEREAL_3};
-CRGB leds[LED_COUNT];
+#endif
 
+#ifndef TEST
 void main_function(void);
-void pulse_leds(uint8_t led_count = LED_COUNT);
 void pump_milk(void);
 void deposit_cereal(void);
 #endif
@@ -67,15 +66,19 @@ void initButtons(void);
 void initScreen(void);
 void pushMilkSprites(void);
 void touch_calibrate(void);
+int toPWM(int val);
 
 void setup() {
     Serial.begin(115200);
 
 #ifndef TEST
-    pinMode(BELT, OUTPUT);
+    ledcSetup(BELT, FREQ, RES);
+    ledcSetup(PUMP, FREQ, RES);
+    ledcAttachPin(BELT_EN, BELT);
+    ledcAttachPin(PUMP_EN, PUMP);
+
     pinMode(BELT_FORWARD, OUTPUT);
     pinMode(BELT_BACK, OUTPUT);
-    pinMode(PUMP, OUTPUT);
     pinMode(PUMP_FORWARD, OUTPUT);
     pinMode(PUMP_BACK, OUTPUT);
     pinMode(SENSOR_START, INPUT_PULLUP);
@@ -87,18 +90,14 @@ void setup() {
     pinMode(SERVO_CEREAL_1, OUTPUT);
     pinMode(SERVO_CEREAL_2, OUTPUT);
     pinMode(SERVO_CEREAL_3, OUTPUT);
-    pinMode(SOLENOID_1, OUTPUT);
-    pinMode(SOLENOID_2, OUTPUT);
 
-    digitalWrite(BELT, 0);
+    ledcWrite(BELT, 0);
+    ledcWrite(PUMP, 0);
+
     digitalWrite(BELT_FORWARD, 1);
     digitalWrite(BELT_BACK, 0);
-    digitalWrite(PUMP, 0);
     digitalWrite(PUMP_FORWARD, 0);
     digitalWrite(PUMP_BACK, 0);
-    analogWrite(SERVO_CEREAL_1, 90.0f);
-    digitalWrite(SERVO_CEREAL_2, 90.0f);
-    digitalWrite(SERVO_CEREAL_3, 90.0f);
 
     servo[0].attach(SERVO_CEREAL_1);
     servo[1].attach(SERVO_CEREAL_2);
@@ -106,8 +105,6 @@ void setup() {
     servo[0].write(90.0f);
     servo[1].write(90.0f);
     servo[2].write(90.0f);
-
-    FastLED.addLeds<WS2812B, LED, GBR>(leds, LED_COUNT);
 #endif
 
     tft.begin();
@@ -135,12 +132,6 @@ void setup() {
 void loop() {
     static uint32_t scanTime = millis();
     uint16_t t_x, t_y;
-
-#ifndef TEST
-    for (auto led : leds) led = CRGB::Blue;
-    FastLED.show();
-    pulse_leds();
-#endif
 
     if (millis() - scanTime >= 50) {
         bool pressed = tft.getTouch(&t_x, &t_y);
@@ -217,8 +208,6 @@ void loop() {
 #ifndef TEST
 // Main functionality of the program
 void main_function(void) {
-    for (auto led : leds) led = CRGB::Black;
-    FastLED.show();
     Serial.println("Platki czas zaczac");
     Serial.printf("Platki %d, mleko %d\n", cereal, milk);
 
@@ -232,23 +221,15 @@ void main_function(void) {
     tft.drawString("Wydawanie miski", tft.width() / 2, tft.height() / 2 + 18);
     delay(1000);
 
-    for (uint8_t i = 0; i < LED_START; i++)
-        leds[i] = CRGB::Green;
-
-    while (analogRead(SENSOR_START) > SENSOR_SENSITIVITY)
-        pulse_leds(LED_START);
-
-    for (uint8_t i = 0; i < LED_MILK; i++)
-        leds[i] = CRGB::Blue;
-    FastLED.show();
+    while (analogRead(SENSOR_START) > SENSOR_SENSITIVITY);
 
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nalewanie mleka", tft.width() / 2, tft.height() / 2);
 
-    analogWrite(BELT, BELT_SPEED);
+    ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(SENSOR_MILK) > SENSOR_SENSITIVITY);
 
-    analogWrite(BELT, 0.0f);
+    ledcWrite(BELT, 0);
     delay(500);
     pump_milk();
     delay(500);
@@ -266,79 +247,53 @@ void main_function(void) {
             break;
     }
 
-    for (uint8_t i = 0; i < range; i++)
-        leds[i] = CRGB::Blue;
-    FastLED.show();
-
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Nasypywanie platkow", tft.width() / 2, tft.height() / 2);
 
-    analogWrite(BELT, BELT_SPEED);
+    ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(cereal_sensors[cereal]) > SENSOR_SENSITIVITY);
 
-    analogWrite(BELT, 0.0f);
+    ledcWrite(BELT, 0);
     delay(500);
     deposit_cereal();
     delay(500);
 
-    for (auto led : leds) led = CRGB::Blue;
-    FastLED.show();
-
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_BLUE);
     tft.drawString("Juz prawie gotowe", tft.width() / 2, tft.height() / 2);
 
-    analogWrite(BELT, BELT_SPEED);
+    ledcWrite(BELT, toPWM(BELT_SPEED));
     while (analogRead(SENSOR_END) > SENSOR_SENSITIVITY);
 
-    for (auto led : leds) led = CRGB::Green;
-
-    analogWrite(BELT, 0.0f);
+    ledcWrite(BELT, 0);
     tft.setTextColor(TFT_BLACK);
     tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_GREEN);
     tft.drawString("Odbierz platki", tft.width() / 2, tft.height() / 2 - 18);
     tft.drawString("Smacznego :)", tft.width() / 2, tft.height() / 2 + 18);
 
-    while (analogRead(SENSOR_END) <= SENSOR_SENSITIVITY) {
-        pulse_leds();
-    }
+    while (analogRead(SENSOR_END) <= SENSOR_SENSITIVITY);
 
     uint32_t end = millis();
-    while (millis() - end < 5000) {
-        pulse_leds();
-    }
+    while (millis() - end < 5000);
 
     initScreen();
 }
 
-void pulse_leds(uint8_t led_count = LED_COUNT) {
-    static uint32_t pulseTime = millis();
-    static uint8_t color = 255;
-    static uint8_t fadeAmount = 5;
-
-    if (millis() - pulseTime >= 50) {
-        for (uint8_t i = 0; i < led_count; i++)
-            leds[i].fadeLightBy(color);
-        FastLED.show();
-        color -= fadeAmount;
-        if (color == 0 || color == 255)
-            fadeAmount = -fadeAmount;
-    }
-}
-
 void pump_milk(void) {
-    digitalWrite(PUMP_FORWARD, 1);
     digitalWrite(PUMP_BACK, 0);
-    analogWrite(PUMP, PUMP_SPEED);
-    delay(3000);  // TODO - specify delay based on chosen milk amount
+    digitalWrite(PUMP_FORWARD, 1);
+    ledcWrite(PUMP, toPWM(PUMP_SPEED));
+    delay(3000 * milk + 1);  // TODO - specify delay based on chosen milk amount
 
-    analogWrite(PUMP, 0);
+    ledcWrite(PUMP, 0);
     delay(500);
 
     digitalWrite(PUMP_FORWARD, 0);
     digitalWrite(PUMP_BACK, 1);
-    analogWrite(PUMP, PUMP_SPEED);
+    ledcWrite(PUMP, toPWM(PUMP_SPEED));
     delay(1000);
-    analogWrite(PUMP, 0);
+    ledcWrite(PUMP, 0);
+
+    digitalWrite(PUMP_BACK, 0);
 }
 
 void deposit_cereal(void) {
@@ -451,9 +406,6 @@ void ok_btn_pressAction() {
     if (btn_ok.justPressed()) {
         btn_ok.drawSmoothButton(!btn_ok.getState(), 3, TFT_WHITE);
         if (!cereal_chosen || !milk_chosen) {
-#ifndef TEST
-            for (auto led : leds) led = CRGB::Red;
-#endif
             tft.drawRoundRect(99, 99, tft.width() - 198, tft.height() - 198, 5, TFT_BLACK);
             tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_RED);
             tft.setTextColor(TFT_WHITE);
@@ -469,9 +421,6 @@ void ok_btn_pressAction() {
             delay(2000);
 
             switchScene(scene);
-#ifndef TEST
-            for (auto led : leds) led = CRGB::Blue;
-#endif
             return;
         }
         Serial.println("Platkoinator naprzod");
@@ -627,4 +576,8 @@ void touch_calibrate() {
 
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
     tft.println("Calibration complete!");
+}
+
+int toPWM(int val) {
+    return map(val, 0, 100, 0, pow(2, RES));
 }

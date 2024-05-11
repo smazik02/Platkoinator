@@ -1,0 +1,85 @@
+PINY PO KOLEI (dostępne na płytce, nie chipie SMT)
+GPIO 1 (TX0) -> opcjonalnie (nie może być jako input, outputuje debug info podczas bootowania, potem OK)
+GPIO 2 -> DC wyświetlacza
+GPIO 3 (RX0) -> raczej nie (nie może być jako output, input musi być high podczas bootowania)
+GPIO 4 -> RESET wyświetlacza
+GPIO 5 -> wolny - output high podczas bootowania
+GPIO 12 -> tylko output (ADC)
+GPIO 13 -> wolny (ADC)
+GPIO 14 -> wolny (ADC) - output high podczas bootowania
+GPIO 15 -> CS wyświetlacza
+GPIO 16 -> wolny
+GPIO 17 -> wolny
+GPIO 18 -> SCK wyświetlacza, TCLK dotyku
+GPIO 19 -> TDO dotyku
+GPIO 21 -> TCS dotyku
+GPIO 22 -> wolny
+GPIO 23 -> MOSI wyświetlacza, TDIN dotyku
+GPIO 25 -> wolny (ADC)
+GPIO 26 -> wolny (ADC)
+GPIO 27 -> wolny (ADC)
+GPIO 32 -> wolny (ADC)
+GPIO 33 -> wolny (ADC)
+GPIO 34 -> tylko input (ADC)
+GPIO 35 -> tylko input (ADC)
+
+ADC - 12 bit (0-4095)
+Wszystkie piny które dają output mogą być używane do PWM
+
+WOLNE PINY
+GPIO 1 -> opcjonalny output, TX0, outputuje debug info podczas bootowania, potem OK
+GPIO 5 -> output high podczas bootowania
+GPIO 12 -> tylko output
+GPIO 13 -> ADC
+GPIO 14 -> ADC, output high podczas bootowania
+GPIO 16
+GPIO 17
+GPIO 22
+GPIO 25 -> ADC
+GPIO 26 -> ADC
+GPIO 27 -> ADC
+GPIO 32 -> ADC
+GPIO 33 -> ADC
+GPIO 34 -> ADC, tylko input
+GPIO 35 -> ADC, tylko input
+
+
+Potrzebne piny
+
+6 do silników DC - 4 * digitalWrite (output), 2 * analogWrite (PWM output)
+Piny 1, 5 i 14 outputują coś podczas bootowania, więc można je dać do ustawiania kontrolera (digitalWrite)
+Pozostałe się znajdzie
+
+6 do sensorów - 6 * analogRead (ADC input)
+Piny 26-27 i 33-35 załatwią sprawę
+
+3 do serw - 3 * analogWrite (PWM output)
+Też się coś znajdzie
+
+
+Jeżeli rezygnujemy z jednego nasypywacza to odpada nam jedno serwo i jeden sensor
+
+Opcjonalne piny
+1 do LEDów
+Raczej nie starczy nam pinów, chyba że rezygnujemy z nasypywacza, ale raczej lepiej
+zrezygnować z LEDów IMO
+
+
+
+WYŚWIETLACZ
+
+Od lewa do prawa:
+VCC -> 3.3V
+GND -> GND
+CS -> 15
+RESET -> dowolny (najlepiej 4)
+DC -> 2
+MOSI -> 23
+SCK -> 18
+LED -> 3.3V
+MISO -> pusty
+TCLK -> 18 (wspólny z SCK)
+TCS -> dowolny (najlepiej 21)
+TDIN -> 23 (wspólne z MOSI)
+TDO -> 19
+TIRQ -> pusty
