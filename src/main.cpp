@@ -160,11 +160,11 @@ void setup() {
         while (1);
     }
     IPAddress myIP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(myIP);
+    // Serial.print("AP IP address: ");
+    // Serial.println(myIP);
     server.begin();
 
-    Serial.println("Server started");
+    // Serial.println("Server started");
     beginOTA();
 #endif
 
@@ -232,34 +232,34 @@ void loop() {
                 break;
         }
         if (pressed)
-            Serial.printf(
-                "Cereal chosen: %s Cereal: %d\nMilk chosen: %s Milk: %d\nScene: %d, Both: %s\n\n",
-                cereal_chosen ? "true" : "false", cereal, milk_chosen ? "true" : "false",
-                milk, scene, (cereal_chosen && milk_chosen) ? "true" : "false");
+            // Serial.printf(
+            // "Cereal chosen: %s Cereal: %d\nMilk chosen: %s Milk: %d\nScene: %d, Both: %s\n\n",
+            // cereal_chosen ? "true" : "false", cereal, milk_chosen ? "true" : "false",
+            // milk, scene, (cereal_chosen && milk_chosen) ? "true" : "false");
 
-        if (ready) {
+            if (ready) {
 #ifndef TEST
-            main_function();
+                main_function();
 #else
-            Serial.println("Platki czas zaczac");
-            Serial.printf("Platki %d, mleko %d\n", cereal, milk);
-            tft.drawRoundRect(99, 99, tft.width() - 198, tft.height() - 198, 5, TFT_BLACK);
-            tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_YELLOW);
-            tft.setTextColor(TFT_BLACK);
-            tft.setTextSize(1);
-            tft.setTextDatum(MC_DATUM);
-            tft.drawString("Platki sa przygotowywane", tft.width() / 2, tft.height() / 2 - 18);
-            tft.drawString("(Tu beda etapy po kolei)", tft.width() / 2, tft.height() / 2 + 18);
-            delay(5000);
+                // Serial.println("Platki czas zaczac");
+                // Serial.printf("Platki %d, mleko %d\n", cereal, milk);
+                tft.drawRoundRect(99, 99, tft.width() - 198, tft.height() - 198, 5, TFT_BLACK);
+                tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_YELLOW);
+                tft.setTextColor(TFT_BLACK);
+                tft.setTextSize(1);
+                tft.setTextDatum(MC_DATUM);
+                tft.drawString("Platki sa przygotowywane", tft.width() / 2, tft.height() / 2 - 18);
+                tft.drawString("(Tu beda etapy po kolei)", tft.width() / 2, tft.height() / 2 + 18);
+                delay(5000);
 
-            tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_GREEN);
-            tft.drawString("Odbierz platki", tft.width() / 2, tft.height() / 2 - 18);
-            tft.drawString("Smacznego :)", tft.width() / 2, tft.height() / 2 + 18);
-            delay(2000);
+                tft.fillRoundRect(100, 100, tft.width() - 200, tft.height() - 200, 5, TFT_GREEN);
+                tft.drawString("Odbierz platki", tft.width() / 2, tft.height() / 2 - 18);
+                tft.drawString("Smacznego :)", tft.width() / 2, tft.height() / 2 + 18);
+                delay(2000);
 
-            initScreen();
+                initScreen();
 #endif
-        }
+            }
     }
 }
 
@@ -270,8 +270,8 @@ void main_function(void) {
     for (auto led : leds) led = CRGB::Black;
     FastLED.show();
 #endif
-    Serial.println("Platki czas zaczac");
-    Serial.printf("Platki %d, mleko %d\n", cereal, milk);
+    // Serial.println("Platki czas zaczac");
+    // Serial.printf("Platki %d, mleko %d\n", cereal, milk);
 
     tft.setTextColor(TFT_WHITE);
     tft.setTextSize(1);
@@ -460,7 +460,7 @@ void handleWiFi(void) {
                     }
                     cereal_chosen = true;
                     cereal = 0;
-                    Serial.println("Platki 1 wybrane");
+                    // Serial.println("Platki 1 wybrane");
                 }
                 if (currentLine.endsWith("GET /C2")) {
                     if (scene == 1) {
@@ -472,7 +472,7 @@ void handleWiFi(void) {
                     }
                     cereal_chosen = true;
                     cereal = 1;
-                    Serial.println("Platki 2 wybrane");
+                    // Serial.println("Platki 2 wybrane");
                 }
                 if (currentLine.endsWith("GET /C3")) {
                     if (scene == 1) {
@@ -484,7 +484,7 @@ void handleWiFi(void) {
                     }
                     cereal_chosen = true;
                     cereal = 2;
-                    Serial.println("Platki 3 wybrane");
+                    // Serial.println("Platki 3 wybrane");
                 }
 
                 if (currentLine.endsWith("GET /M1")) {
@@ -498,7 +498,7 @@ void handleWiFi(void) {
                     }
                     milk_chosen = true;
                     milk = 0;
-                    Serial.println("Mleko 1 wybrane");
+                    // Serial.println("Mleko 1 wybrane");
                 }
                 if (currentLine.endsWith("GET /M2")) {
                     if (scene == 2) {
@@ -511,7 +511,7 @@ void handleWiFi(void) {
                     }
                     milk_chosen = true;
                     milk = 1;
-                    Serial.println("Mleko 2 wybrane");
+                    // Serial.println("Mleko 2 wybrane");
                 }
                 if (currentLine.endsWith("GET /M3")) {
                     if (scene == 2) {
@@ -524,7 +524,7 @@ void handleWiFi(void) {
                     }
                     milk_chosen = true;
                     milk = 2;
-                    Serial.println("Mleko 3 wybrane");
+                    // Serial.println("Mleko 3 wybrane");
                 }
 
                 if (currentLine.endsWith("GET /OK")) {
@@ -548,7 +548,7 @@ void handleWiFi(void) {
                         switchScene(scene);
                         return;
                     }
-                    Serial.println("Platkoinator naprzod");
+                    // Serial.println("Platkoinator naprzod");
                     ready = true;
                 }
             }
@@ -570,23 +570,23 @@ void beginOTA(void) {
                 type = "filesystem";
         })
         .onEnd([]() {
-            Serial.println("\nEnd");
+            // Serial.println("\nEnd");
         })
         .onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+            // Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
         })
         .onError([](ota_error_t error) {
-            Serial.printf("Error[%u]: ", error);
+            // Serial.printf("Error[%u]: ", error);
             if (error == OTA_AUTH_ERROR)
-                Serial.println("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR)
-                Serial.println("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR)
-                Serial.println("Connect Failed");
-            else if (error == OTA_RECEIVE_ERROR)
-                Serial.println("Receive Failed");
-            else if (error == OTA_END_ERROR)
-                Serial.println("End Failed");
+                // Serial.println("Auth Failed");
+                else if (error == OTA_BEGIN_ERROR)
+                    // Serial.println("Begin Failed");
+                    else if (error == OTA_CONNECT_ERROR)
+                    // Serial.println("Connect Failed");
+                    else if (error == OTA_RECEIVE_ERROR)
+                    // Serial.println("Receive Failed");
+                    else if (error == OTA_END_ERROR)
+            // Serial.println("End Failed");
         });
     ArduinoOTA.begin();
 }
@@ -601,10 +601,10 @@ void btn1_pressAction() {
         btn1.drawSmoothButton(!btn1.getState(), 3, TFT_WHITE);
         cereal_chosen = btn1.getState() ? true : false;
         cereal = btn1.getState() ? 0 : -1;
-        if (btn1.getState())
-            Serial.println("Platki 1 wybrane");
-        else
-            Serial.println("Platki odznaczone");
+        // if (btn1.getState())
+        //     Serial.println("Platki 1 wybrane");
+        // else
+        //     Serial.println("Platki odznaczone");
     }
 }
 
@@ -617,10 +617,10 @@ void btn2_pressAction() {
         btn2.drawSmoothButton(!btn2.getState(), 3, TFT_WHITE);
         cereal_chosen = btn2.getState() ? true : false;
         cereal = btn2.getState() ? 1 : -1;
-        if (btn2.getState())
-            Serial.println("Platki 2 wybrane");
-        else
-            Serial.println("Platki odznaczone");
+        // if (btn2.getState())
+        //     // Serial.println("Platki 2 wybrane");
+        //     else
+        // // Serial.println("Platki odznaczone");
     }
 }
 
@@ -633,10 +633,10 @@ void btn3_pressAction() {
         btn3.drawSmoothButton(!btn3.getState(), 3, TFT_WHITE);
         cereal_chosen = btn3.getState() ? true : false;
         cereal = btn3.getState() ? 2 : -1;
-        if (btn3.getState())
-            Serial.println("Platki 3 wybrane");
-        else
-            Serial.println("Platki odznaczone");
+        // if (btn3.getState())
+        //     // Serial.println("Platki 3 wybrane");
+        //     else
+        // // Serial.println("Platki odznaczone");
     }
 }
 
@@ -650,10 +650,10 @@ void btn4_pressAction() {
         pushMilkSprites();
         milk_chosen = btn4.getState() ? true : false;
         milk = btn4.getState() ? 0 : -1;
-        if (btn4.getState())
-            Serial.println("Mleko 1 wybrane");
-        else
-            Serial.println("Mleko odznaczone");
+        // if (btn4.getState())
+        //     // Serial.println("Mleko 1 wybrane");
+        //     else
+        // // Serial.println("Mleko odznaczone");
     }
 }
 
@@ -667,10 +667,10 @@ void btn5_pressAction() {
         pushMilkSprites();
         milk_chosen = btn5.getState() ? true : false;
         milk = btn5.getState() ? 1 : -1;
-        if (btn5.getState())
-            Serial.println("Mleko 2 wybrane");
-        else
-            Serial.println("Mleko odznaczone");
+        // if (btn5.getState())
+        //     // Serial.println("Mleko 2 wybrane");
+        //     else
+        // // Serial.println("Mleko odznaczone");
     }
 }
 
@@ -684,10 +684,10 @@ void btn6_pressAction() {
         pushMilkSprites();
         milk_chosen = btn6.getState() ? true : false;
         milk = btn6.getState() ? 2 : -1;
-        if (btn6.getState())
-            Serial.println("Mleko 3 wybrane");
-        else
-            Serial.println("Mleko odznaczone");
+        // if (btn6.getState())
+        //     // Serial.println("Mleko 3 wybrane");
+        //     else
+        // // Serial.println("Mleko odznaczone");
     }
 }
 
@@ -718,7 +718,7 @@ void ok_btn_pressAction() {
 #endif
             return;
         }
-        Serial.println("Platkoinator naprzod");
+        // Serial.println("Platkoinator naprzod");
         ready = true;
     }
 }
@@ -761,7 +761,7 @@ void switchScene(uint8_t scene) {
             break;
         }
     }
-    Serial.printf("Switching to scene %d\n\n", scene);
+    // Serial.printf("Switching to scene %d\n\n", scene);
 }
 
 void initButtons() {
