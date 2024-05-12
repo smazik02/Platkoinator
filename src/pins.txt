@@ -22,47 +22,47 @@ GPIO 32 -> wolny (ADC)
 GPIO 33 -> wolny (ADC)
 GPIO 34 -> tylko input (ADC)
 GPIO 35 -> tylko input (ADC)
+GPIO 36 (VP) -> tylko input (ADC)
+GPIO 39 (VN) -> tylko input (ADC)
 
 ADC - 12 bit (0-4095)
 Wszystkie piny które dają output mogą być używane do PWM
 
 WOLNE PINY
-#GPIO 1 -> opcjonalny output, TX0, outputuje debug info podczas bootowania, potem OK
-#GPIO 5 -> output high podczas bootowania
+GPIO 1 -> opcjonalny output, TX0, outputuje debug info podczas bootowania, potem OK
+GPIO 5 -> output high podczas bootowania
 GPIO 12 -> tylko output
 GPIO 13 -> ADC
-#GPIO 14 -> ADC, output high podczas bootowania
+GPIO 14 -> ADC, output high podczas bootowania
 GPIO 16
 GPIO 17
 GPIO 22
 GPIO 25 -> ADC
-#GPIO 26 -> ADC
-#GPIO 27 -> ADC
-#GPIO 32 -> ADC
-#GPIO 33 -> ADC
-#GPIO 34 -> ADC, tylko input
-#GPIO 35 -> ADC, tylko input
+GPIO 26 -> ADC
+GPIO 27 -> ADC
+GPIO 32 -> ADC
+GPIO 33 -> ADC
+GPIO 34 -> ADC, tylko input
+GPIO 35 -> ADC, tylko input
+GPIO 36 (VP) -> ADC, tylko input
+GPIO 39 (VN) -> ADC, tylko input
 
 
 Potrzebne piny
 
 6 do silników DC - 4 * digitalWrite (output), 2 * analogWrite (PWM output)
-Piny 1, 5 i 14 outputują coś podczas bootowania, więc można je dać do ustawiania kontrolera (digitalWrite)
+Piny 5 i 14 outputują coś podczas bootowania, więc można je dać do ustawiania kontrolera (digitalWrite)
 Pozostałe się znajdzie
 
 6 do sensorów - 6 * analogRead (ADC input)
-Piny 26-27 i 33-35 załatwią sprawę
+Piny ADC załatwią sprawę
 
 3 do serw - 3 * analogWrite (PWM output)
 Też się coś znajdzie
 
 
-Jeżeli rezygnujemy z jednego nasypywacza to odpada nam jedno serwo i jeden sensor
-
 Opcjonalne piny
 1 do LEDów
-Raczej nie starczy nam pinów, chyba że rezygnujemy z nasypywacza, ale raczej lepiej
-zrezygnować z LEDów IMO
 
 
 
